@@ -4,60 +4,35 @@
 
 using namespace std;
 
-void min_reduction(int arr[], int n) {
-  int min_value = INT_MAX;
-  #pragma omp parallel for reduction(min: min_value)
-  for (int i = 0; i < n; i++) {
-    if (arr[i] < min_value) {
-      min_value = arr[i];
-    }
-  }
-  cout << "Minimum value: " << min_value << endl;
-}
-
-void max_reduction(int arr[], int n) {
-  int max_value = INT_MIN;
-  #pragma omp parallel for reduction(max: max_value)
-  for (int i = 0; i < n; i++) {
-    if (arr[i] > max_value) {
-      max_value = arr[i];
-    }
-  }
-  cout << "Maximum value: " << max_value << endl;
-}
-
-void sum_reduction(int arr[], int n) {
-  int sum = 0;
-  #pragma omp parallel for reduction(+: sum)
-  for (int i = 0; i < n; i++) {
-    sum += arr[i];
-  }
-  cout << "Sum: " << sum << endl;
-}
-
-void average_reduction(int arr[], int n) {
-  int sum = 0;
-  #pragma omp parallel for reduction(+: sum)
-  for (int i = 0; i < n; i++) {
-    sum += arr[i];
-  }
-  cout << "Average: " << (double)sum / n << endl;
-}
-
 int main() {
-  int *arr, n;
-  cout << "\n enter total no of elements=>";
-  cin >> n;
-  arr = new int[n];
-  cout << "\n enter elements=>";
-  for (int i = 0; i < n; i++) {
-    cin >> arr[i];
-  }
+    int *arr, n;
+    cout << "enter total no of elements : ";
+    cin >> n;
+    arr = new int[n];
+    cout << "enter elements : ";
+    for (int i = 0; i < n; i++) {
+        cin >> arr[i];
+    }
 
-  min_reduction(arr, n);
-  max_reduction(arr, n);
-  sum_reduction(arr, n);
-  average_reduction(arr, n);
+    int min_value = INT_MAX;
+    int max_value = INT_MIN;
+    int sum = 0;
 
-  delete[] arr; // Free dynamically allocated memory
+    #pragma omp parallel for reduction(min: min_value) reduction(max: max_value) reduction(+: sum)
+    for (int i = 0; i < n; i++) {
+        if (arr[i] < min_value) {
+            min_value = arr[i];
+        }
+        if (arr[i] > max_value) {
+            max_value = arr[i];
+        }
+        sum += arr[i];
+    }
+
+    int average = sum / n;
+
+    cout << "Minimum value: " << min_value << endl;
+    cout << "Maximum value: " << max_value << endl;
+    cout << "Sum: " << sum << endl;
+    cout << "Average: " << average << endl;
 }
