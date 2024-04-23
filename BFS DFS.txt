@@ -1,0 +1,61 @@
+#include <iostream>
+#include <queue>
+#include <omp.h>
+
+using namespace std;
+
+// Breadth First Search
+void BFS(const int* adj, int V, int start) {
+    bool* visited = new bool[V]();
+    queue<int> q;
+
+    visited[start] = true;
+    q.push(start);
+
+    while (!q.empty()) {
+        int current = q.front();
+        q.pop();
+        cout << current << " ";
+
+        #pragma omp parallel for
+        for (int i = 0; i < V; ++i)
+            if (adj[current * V + i] && !visited[i])
+                visited[i] = true, q.push(i);
+    }
+
+    delete[] visited;
+}
+
+// Depth First Search
+void DFS(const int* adj, bool* visited, int V, int current) {
+    visited[current] = true;
+    cout << current << " ";
+
+    #pragma omp parallel for
+    for (int i = 0; i < V; ++i)
+        if (adj[current * V + i] && !visited[i])
+            DFS(adj, visited, V, i);
+}
+
+int main() {
+    int V = 6;
+    int adj[] = {0, 1, 1, 0, 0, 0,
+    1, 0, 0, 1, 1, 0,
+    1, 0, 0, 0, 0, 1,
+    0, 1, 0, 0, 0, 0,
+    0, 1, 0, 0, 0, 0,
+    0, 0, 1, 0, 0, 0};
+
+    cout << "BFS traversal: ";
+    BFS(adj, V, 0);
+    cout << endl;
+
+    cout << "DFS traversal: ";
+    bool* visited = new bool[V]();
+    DFS(adj, visited, V, 0);
+    cout << endl;
+
+    delete[] visited;
+
+    return 0;
+}

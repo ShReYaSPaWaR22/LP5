@@ -1,0 +1,40 @@
+#include <iostream>
+#include <cuda_runtime.h>
+
+using namespace std;
+
+__global__ void matmul(int* A, int* B, int* C, int N) {
+    int i = blockIdx.y * blockDim.y + threadIdx.y;
+    int j = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i < N && j < N) {
+        int Pvalue = 0;
+        for (int k = 0; k < N; k++) {
+            Pvalue += A[i * N + k] * B[k * N + j];
+        }
+        C[i * N + j] = Pvalue;
+    }
+}
+
+int main() {
+    int N = 512;
+    int* A, * B, * C;
+    cudaMallocManaged(&A, N * N * sizeof(int));
+    cudaMallocManaged(&B, N * N * sizeof(int));
+    cudaMallocManaged(&C, N * N * sizeof(int));
+    for (int i = 0; i < N * N; i++) {
+        A[i] = i;
+        B[i] = (i % N) * N + i / N;
+    }
+    matmul<<<dim3((N + 15) / 16, (N + 15) / 16), dim3(16, 16)>>>(A, B, C, N);
+    cudaDeviceSynchronize();
+    for (int i = 0; i < min(N, 10); i++) {
+        for (int j = 0; j < min(N, 10); j++) {
+            cout << C[i * N + j] << " ";
+        }
+        cout << endl;
+    }
+    cudaFree(A);
+    cudaFree(B);
+    cudaFree(C);
+    return 0;
+}
